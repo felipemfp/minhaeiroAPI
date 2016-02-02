@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from helpers import *
 
 db = SQLAlchemy()
 
@@ -18,6 +19,13 @@ class User(db.Model):
 
     def __repr__(self):
         return 'User {}'.format(self.user_id)
+
+    @staticmethod
+    def authenticate(user_id, auth_key):
+        user = User.query.filter_by(user_id=user_id).first()
+        if user and user.auth_key == auth_key:
+            return user
+        return None
 
 
 class Person(db.Model):
