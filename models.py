@@ -1,7 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
+from minhaeiro import app
 from helpers import *
 
-db = SQLAlchemy()
+db = SQLAlchemy(app)
 
 
 class User(db.Model):
@@ -14,11 +15,17 @@ class User(db.Model):
     people = db.relationship('Person', backref='user', lazy='dynamic')
     transactions = db.relationship('Transaction', backref='user', lazy='dynamic')
 
-    def __init__(self):
-        pass
-
     def __repr__(self):
         return 'User {}'.format(self.user_id)
+
+    def as_dict(self):
+        return {
+            'user_id': self.user_id,
+            'name': self.name,
+            'login': self.login,
+            'password': '*',
+            'auth_key': self.auth_key
+        }
 
     @staticmethod
     def authenticate(user_id, auth_key):
@@ -36,9 +43,6 @@ class Person(db.Model):
     transactions = db.relationship('Transaction', backref='person', lazy='dynamic')
     transaction_items = db.relationship('TransactionItem', backref='person', lazy='dynamic')
 
-    def __init__(self):
-        pass
-
     def __repr__(self):
         return '<Person {}>'.format(self.person_id)
 
@@ -55,10 +59,13 @@ class Transaction(db.Model):
 
     transaction_items = db.relationship('TransactionItem', backref='transaction', lazy='dynamic')
 
-    db.ForeignKeyConstraint(['user_id', 'person_id'], ['person.user_id', 'person.person_id'])
+    __table_args__= (
+        db.ForeignKeyConstraint(
+            ['user_id', 'person_id'],
+            ['person.user_id', 'person.person_id']
+        ),
+    )
 
-    def __init__(self):
-        pass
 
     def __repr__(self):
         return '<Transaction {}.{}>'.format(self.user_id, self.transaction_id)
@@ -75,11 +82,16 @@ class TransactionItem(db.Model):
     type = db.Column(db.String(1))
     done = db.Column(db.Boolean)
 
-    db.ForeignKeyConstraint(['user_id', 'transaction_id'], ['transaction.user_id', 'transaction.transaction_id'])
-    db.ForeignKeyConstraint(['user_id', 'person_id'], ['person.user_id', 'person.person_id'])
-
-    def __init__(self):
-        pass
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['user_id', 'transaction_id'],
+            ['transaction.user_id', 'transaction.transaction_id']
+        ),
+        db.ForeignKeyConstraint(
+            ['user_id', 'person_id'],
+            ['person.user_id', 'person.person_id']
+        )
+    )
 
     def __repr__(self):
         return '<Transaction Item {}.{}.{}>'.format(self.user_id, self.transaction_id, self.item_id)
