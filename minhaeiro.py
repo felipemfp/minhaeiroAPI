@@ -5,6 +5,8 @@ from helpers import *
 app = Flask(__name__)
 app.config.from_pyfile('config.py', silent=True)
 
+db.init_app(app)
+
 @app.route('/api')
 def api():
     return '<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>'

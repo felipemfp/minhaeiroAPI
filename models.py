@@ -1,8 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
-from minhaeiro import app
 from helpers import *
 
-db = SQLAlchemy(app)
+db = SQLAlchemy()
 
 
 class User(db.Model):
