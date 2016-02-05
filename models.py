@@ -13,6 +13,7 @@ class User(db.Model):
 
     people = db.relationship('Person', backref='user', lazy='dynamic')
     transactions = db.relationship('Transaction', backref='user', lazy='dynamic')
+    categories = db.relationship('Category', backref='user', lazy='dynamic')
 
     def __repr__(self):
         return 'User {}'.format(self.user_id)
@@ -23,7 +24,9 @@ class User(db.Model):
             'name': self.name,
             'login': self.login,
             'password': '*',
-            'auth_key': self.auth_key
+            'auth_key': self.auth_key,
+            'people': [person.as_dict() for person in self.people],
+            'categories': [category.as_dict() for category in self.categories]
         }
 
     @staticmethod
@@ -45,10 +48,18 @@ class Person(db.Model):
     def __repr__(self):
         return '<Person {}>'.format(self.person_id)
 
+    def as_dict(self):
+        return {
+            'user_id': self.user_id,
+            'person_id': self.person_id,
+            'name': self.name
+        }
+
 
 class Transaction(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), primary_key=True)
     transaction_id = db.Column(db.Integer, primary_key=True)
+    category_id = db.Column(db.Integer, nullable=False)
     person_id = db.Column(db.Integer, nullable=False)
     transaction_date = db.Column(db.DateTime)
     value = db.Column(db.Float)
@@ -63,11 +74,27 @@ class Transaction(db.Model):
             ['user_id', 'person_id'],
             ['person.user_id', 'person.person_id']
         ),
+        db.ForeignKeyConstraint(
+            ['user_id', 'category_id'],
+            ['category.user_id', 'category.category_id']
+        )
     )
-
 
     def __repr__(self):
         return '<Transaction {}.{}>'.format(self.user_id, self.transaction_id)
+
+    def as_dict(self):
+        return {
+            'user_id': self.user_id,
+            'transaction_id': self.transaction_id,
+            'person_id': self.person_id,
+            'transaction_date': self.transaction_id,
+            'value': self.value,
+            'notes': self.notes,
+            'type': self.type,
+            'done': self.done,
+            'transaction_items': [item.as_dict() for item in self.transaction_items]
+        }
 
 
 class TransactionItem(db.Model):
@@ -94,3 +121,37 @@ class TransactionItem(db.Model):
 
     def __repr__(self):
         return '<Transaction Item {}.{}.{}>'.format(self.user_id, self.transaction_id, self.item_id)
+
+    def as_dict(self):
+        return {
+            'user_id': self.user_id,
+            'transaction_id': self.transaction_id,
+            'item_id': self.item_id,
+            'person_id': self.person_id,
+            'item_date': self.item_date,
+            'value': self.value,
+            'notes': self.notes,
+            'type': self.type,
+            'done': self.done
+        }
+
+
+class Category(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), primary_key=True)
+    category_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    icon_id = db.Column(db.Integer)
+
+    transactions = db.relationship('Transaction', backref='category', lazy='dynamic')
+
+    def __repr__(self):
+        return '<Category {}.{}>'.format(self.user_id, self.category_id)
+
+    def as_dict(self):
+        return {
+            'user_id': self.user_id,
+            'category_id': self.category_id,
+            'name': self.name,
+            'icon_id': self.icon_id,
+            'transactions': [transaction.as_dict() for transaction in self.transactions]
+        }
