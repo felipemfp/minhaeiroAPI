@@ -7,6 +7,12 @@ app.config.from_pyfile('config.py', silent=True)
 
 db.init_app(app)
 
+
+@app.errorhandler(404)
+def not_found(error):
+    return json.jsonify({'error': 404}), 404
+
+
 @app.route('/api')
 def api():
     return '<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>'
