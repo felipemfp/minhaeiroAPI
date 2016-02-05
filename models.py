@@ -31,7 +31,7 @@ class User(db.Model):
 
     @staticmethod
     def authenticate(user_id, auth_key):
-        user = User.query.filter_by(user_id=user_id).first()
+        user = User.query.get(user_id)
         if user and user.auth_key == auth_key:
             return user
         return None

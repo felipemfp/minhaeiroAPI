@@ -8,17 +8,22 @@ app.config.from_pyfile('config.py', silent=True)
 db.init_app(app)
 
 
+@app.errorhandler(405)
+def not_allowed(error):
+    return json.jsonify({'error': 'method not allowed'}), 405
+
+
 @app.errorhandler(404)
 def not_found(error):
-    return json.jsonify({'error': 404}), 404
+    return json.jsonify({'error': 'not found'}), 404
 
 
-@app.route('/api')
+@app.route('/api/')
 def api():
     return '<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>'
 
 
-@app.route('/api/login', methods=['POST'])
+@app.route('/api/login/', methods=['POST'])
 def login():
     supposed_user = request.get_json(force=True)
     user = User.query.filter_by(login=supposed_user['login']).first()
@@ -27,15 +32,16 @@ def login():
     return json.jsonify({})
 
 
-@app.route('/api/<auth_key>/user/<user_id>', methods=['GET'])
-def user_get(auth_key, user_id):
+@app.route('/api/user/<int:user_id>', methods=['GET'])
+def user_get(user_id):
+    auth_key = request.args.get('key')
     user = User.authenticate(user_id, auth_key)
     if user:
         return json.jsonify(user.as_dict())
     return json.jsonify({})
 
 
-@app.route('/api/user', methods=['POST'])
+@app.route('/api/user/', methods=['POST'])
 def user_post():
     supposed_user = request.get_json(force=True)
     if supposed_user:
@@ -51,8 +57,9 @@ def user_post():
     return json.jsonify({})
 
 
-@app.route('/api/<auth_key>/user/<user_id>', methods=['PUT'])
-def user_put(auth_key, user_id):
+@app.route('/api/user/<int:user_id>', methods=['PUT'])
+def user_put(user_id):
+    auth_key = request.args.get('key')
     user = User.authenticate(user_id, auth_key)
     if user:
         new_user = request.get_json(force=True)
@@ -64,8 +71,9 @@ def user_put(auth_key, user_id):
     return json.jsonify({})
 
 
-@app.route('/api/<auth_key>/user/<user_id>', methods=['DELETE'])
-def user_delete(auth_key, user_id):
+@app.route('/api/user/<int:user_id>', methods=['DELETE'])
+def user_delete(user_id):
+    auth_key = request.args.get('key')
     user = User.authenticate(user_id, auth_key)
     if user:
         db.session.delete(user)
