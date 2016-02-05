@@ -26,7 +26,7 @@ class UserAPI(MethodView):
                 return json.jsonify(user.as_dict())
         return json.jsonify({})
 
-    def user_put(self, user_id):
+    def put(self, user_id):
         auth_key = request.args.get('key')
         user = User.authenticate(user_id, auth_key)
         if user:
