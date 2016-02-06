@@ -1,6 +1,15 @@
 from apis import LoginAPI, UserAPI, CategoryAPI, PersonAPI
 
 
+def register_api(app, view, endpoint, url, pk, pk_type='int'):
+    view_func = view.as_view(endpoint)
+    app.add_url_rule('/api/{}/<int:user_id>/'.format(url), defaults={pk: None},
+                     view_func=view_func, methods=['GET', ])
+    app.add_url_rule('/api/{}/<int:user_id>/'.format(url), view_func=view_func, methods=['POST', ])
+    app.add_url_rule('/api/{}/<int:user_id>/<{}:{}>'.format(url, pk_type, pk), view_func=view_func,
+                     methods=['GET', 'PUT', 'DELETE'])
+
+
 def init_app(app):
     user_view = UserAPI.as_view('user_api')
     app.add_url_rule('/api/users/', view_func=user_view, methods=['POST', ])
@@ -9,16 +18,5 @@ def init_app(app):
     login_view = LoginAPI.as_view('login_api')
     app.add_url_rule('/api/login/', view_func=login_view, methods=['POST', ])
 
-    category_view = CategoryAPI.as_view('category_api')
-    app.add_url_rule('/api/categories/<int:user_id>/', defaults={'category_id': None},
-                     view_func=category_view, methods=['GET', ])
-    app.add_url_rule('/api/categories/<int:user_id>/', view_func=category_view, methods=['POST', ])
-    app.add_url_rule('/api/categories/<int:user_id>/<int:category_id>',
-                     view_func=category_view, methods=['GET', 'PUT', 'DELETE'])
-
-    person_view = PersonAPI.as_view('person_api')
-    app.add_url_rule('/api/people/<int:user_id>/', defaults={'person_id': None},
-                     view_func=person_view, methods=['GET', ])
-    app.add_url_rule('/api/people/<int:user_id>/', view_func=person_view, methods=['POST', ])
-    app.add_url_rule('/api/people/<int:user_id>/<int:person_id>',
-                     view_func=person_view, methods=['GET', 'PUT', 'DELETE'])
+    register_api(app, CategoryAPI, 'category_api', 'categories', 'category_id')
+    register_api(app, PersonAPI, 'person_api', 'people', 'person_id')
