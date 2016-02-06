@@ -1,4 +1,4 @@
-from apis import LoginAPI, UserAPI, CategoryAPI, PersonAPI
+from apis import LoginAPI, UserAPI, CategoryAPI, PersonAPI, TransactionAPI
 
 
 def register_api(app, view, endpoint, url, pk, pk_type='int'):
@@ -20,3 +20,4 @@ def init_app(app):
 
     register_api(app, CategoryAPI, 'category_api', 'categories', 'category_id')
     register_api(app, PersonAPI, 'person_api', 'people', 'person_id')
+    register_api(app, TransactionAPI, 'transaction_api', 'transactions', 'transaction_id')

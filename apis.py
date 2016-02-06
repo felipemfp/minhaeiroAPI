@@ -151,3 +151,62 @@ class PersonAPI(MethodView):
                 db.session.commit()
                 return json.jsonify(person.as_dict())
         return json.jsonify({})
+
+
+class TransactionAPI(MethodView):
+    def get(self, user_id, transaction_id):
+        auth_key = request.args.get('key')
+        user = User.authenticate(user_id, auth_key)
+        if user:
+            if transaction_id:
+                return json.jsonify(user.transactions.filter_by(transaction_id=transaction_id).first_or_404().as_dict())
+            return json.jsonify({'transactions': [transaction.as_dict() for transaction in user.transactions]})
+        return json.jsonify({})
+
+    def post(self, user_id):
+        auth_key = request.args.get('key')
+        user = User.authenticate(user_id, auth_key)
+        if user:
+            supposed_transaction = request.get_json(force=True)
+            transaction = Transaction()
+            transaction.user_id = user_id
+            transaction.category_id = supposed_transaction['category_id']
+            transaction.person_id = supposed_transaction['person_id']
+            transaction.transaction_date = supposed_transaction['transaction_date']
+            transaction.value = supposed_transaction['value']
+            transaction.notes = supposed_transaction['notes']
+            transaction.type = supposed_transaction['type']
+            transaction.done = supposed_transaction['done']
+            db.session.add(transaction)
+            db.session.commit()
+            if transaction.transaction_id:
+                return json.jsonify(transaction.as_dict())
+        return json.jsonify({})
+
+    def put(self, user_id, transaction_id):
+        auth_key = request.args.get('key')
+        user = User.authenticate(user_id, auth_key)
+        if user:
+            new_transaction = request.get_json(force=True)
+            transaction = user.transactions.filter_by(transaction_id=transaction_id).first_or_404()
+            transaction.category_id = new_transaction['category_id']
+            transaction.person_id = new_transaction['person_id']
+            transaction.transaction_date = new_transaction['transaction_date']
+            transaction.value = new_transaction['value']
+            transaction.notes = new_transaction['notes']
+            transaction.type = new_transaction['type']
+            transaction.done = new_transaction['done']
+            db.session.commit()
+            return json.jsonify(transaction.as_dict())
+        return json.jsonify({})
+
+    def delete(self, user_id, transaction_id):
+        auth_key = request.args.get('key')
+        user = User.authenticate(user_id, auth_key)
+        if user:
+            transaction = user.transaction.filter_by(transaction_id=transaction_id).first_or_404()
+            if transaction:
+                db.session.delete(transaction)
+                db.session.commit()
+                return json.jsonify(transaction.as_dict())
+        return json.jsonify({})

@@ -87,7 +87,7 @@ class Transaction(db.Model):
             'transaction_id': self.transaction_id,
             'category_id': self.category_id,
             'person_id': self.person_id,
-            'transaction_date': self.transaction_id,
+            'transaction_date': self.transaction_date,
             'value': self.value,
             'notes': self.notes,
             'type': self.type,
