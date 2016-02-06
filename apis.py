@@ -44,7 +44,7 @@ class UserAPI(MethodView):
         if user:
             db.session.delete(user)
             db.session.commit()
-            return json.jsonify(user.as_dict())
+            return json.jsonify({'success': '{} was deleted'.format(user)})
         return json.jsonify({})
 
 
@@ -102,7 +102,7 @@ class CategoryAPI(MethodView):
             if category:
                 db.session.delete(category)
                 db.session.commit()
-                return json.jsonify(category.as_dict())
+                return json.jsonify({'success': '{} was deleted'.format(category)})
         return json.jsonify({})
 
 
@@ -149,7 +149,7 @@ class PersonAPI(MethodView):
             if person:
                 db.session.delete(person)
                 db.session.commit()
-                return json.jsonify(person.as_dict())
+                return json.jsonify({'success': '{} was deleted'.format(person)})
         return json.jsonify({})
 
 
@@ -204,9 +204,71 @@ class TransactionAPI(MethodView):
         auth_key = request.args.get('key')
         user = User.authenticate(user_id, auth_key)
         if user:
-            transaction = user.transaction.filter_by(transaction_id=transaction_id).first_or_404()
+            transaction = user.transactions.filter_by(transaction_id=transaction_id).first_or_404()
             if transaction:
                 db.session.delete(transaction)
                 db.session.commit()
-                return json.jsonify(transaction.as_dict())
+                return json.jsonify({'success': '{} was deleted'.format(transaction)})
+        return json.jsonify({})
+
+
+class TransactionItemAPI(MethodView):
+    def get(self, user_id, transaction_id, item_id):
+        auth_key = request.args.get('key')
+        user = User.authenticate(user_id, auth_key)
+        if user:
+            transaction = user.transactions.filter_by(transaction_id=transaction_id).first_or_404()
+            if item_id:
+                return json.jsonify(transaction.transaction_items.filter_by(item_id=item_id).first_or_404().as_dict())
+            return json.jsonify({'transaction_items': [item.as_dict() for item in transaction.transaction_items]})
+        return json.jsonify({})
+
+    def post(self, user_id, transaction_id):
+        auth_key = request.args.get('key')
+        user = User.authenticate(user_id, auth_key)
+        if user:
+            transaction = user.transactions.filter_by(transaction_id=transaction_id).first_or_404()
+            supposed_item = request.get_json(force=True)
+            item = TransactionItem()
+            item.user_id = user_id
+            item.transaction_id = transaction.transaction_id
+            item.person_id = supposed_item['person_id']
+            item.item_date = supposed_item['item_date']
+            item.value = supposed_item['value']
+            item.notes = supposed_item['notes']
+            item.type = supposed_item['type']
+            item.done = supposed_item['done']
+            db.session.add(item)
+            db.session.commit()
+            if item.item_id:
+                return json.jsonify(item.as_dict())
+        return json.jsonify({})
+
+    def put(self, user_id, transaction_id, item_id):
+        auth_key = request.args.get('key')
+        user = User.authenticate(user_id, auth_key)
+        if user:
+            transaction = user.transactions.filter_by(transaction_id=transaction_id).first_or_404()
+            new_item = request.get_json(force=True)
+            item = transaction.transaction_items.filter_by(item_id=item_id).first_or_404()
+            item.person_id = new_item['person_id']
+            item.item_date = new_item['item_date']
+            item.value = new_item['value']
+            item.notes = new_item['notes']
+            item.type = new_item['type']
+            item.done = new_item['done']
+            db.session.commit()
+            return json.jsonify(item.as_dict())
+        return json.jsonify({})
+
+    def delete(self, user_id, transaction_id, item_id):
+        auth_key = request.args.get('key')
+        user = User.authenticate(user_id, auth_key)
+        if user:
+            transaction = user.transactions.filter_by(transaction_id=transaction_id).first_or_404()
+            item = transaction.transaction_items.filter_by(item_id=item_id).first_or_404()
+            if item:
+                db.session.delete(item)
+                db.session.commit()
+                return json.jsonify({'success': '{} was deleted'.format(item)})
         return json.jsonify({})
