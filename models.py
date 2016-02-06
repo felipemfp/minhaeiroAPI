@@ -24,8 +24,7 @@ class User(db.Model):
             'login': self.login,
             'password': '*',
             'auth_key': self.auth_key,
-            'people': [person.as_dict() for person in self.people],
-            'categories': [category.as_dict() for category in self.categories]
+            'transactions': [transaction.as_dict() for transaction in self.transactions]
         }
 
     @staticmethod
@@ -86,12 +85,15 @@ class Transaction(db.Model):
         return {
             'user_id': self.user_id,
             'transaction_id': self.transaction_id,
+            'category_id': self.category_id,
             'person_id': self.person_id,
             'transaction_date': self.transaction_id,
             'value': self.value,
             'notes': self.notes,
             'type': self.type,
             'done': self.done,
+            'person': self.person.as_dict(),
+            'category': self.category.as_dict(),
             'transaction_items': [item.as_dict() for item in self.transaction_items]
         }
 
@@ -151,6 +153,5 @@ class Category(db.Model):
             'user_id': self.user_id,
             'category_id': self.category_id,
             'name': self.name,
-            'icon_id': self.icon_id,
-            'transactions': [transaction.as_dict() for transaction in self.transactions]
+            'icon_id': self.icon_id
         }
