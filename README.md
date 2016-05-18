@@ -1,2 +1,2 @@
 # minhaeiroAPI
-Versão em **Python** da RESTful API para **[Minhaeiro](https://github.com/chicobentojr/minhaeiro)**
+A Flask API alternative to Minhaeiro App **[Minhaeiro](https://github.com/chicobentojr/minhaeiro)**
