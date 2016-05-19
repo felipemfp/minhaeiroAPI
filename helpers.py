@@ -19,7 +19,7 @@ class Auth:
 class Crypt:
     @staticmethod
     def salt():
-        return os.environ.get('MINHAEIRO_SALT') or 'development_salt'
+        return os.environ.get('MINHAEIRO_SALT', default='development_salt')
 
     @staticmethod
     def hash_sha256(text):
